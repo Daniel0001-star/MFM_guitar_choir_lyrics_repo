@@ -1,3 +1,4 @@
+
 export interface Song {
   id: string;
   title: string;
@@ -29,6 +30,7 @@ export interface ChatMessage {
 
 export enum ViewState {
   LOGIN = 'LOGIN',
+  USER_INFO = 'USER_INFO',
   DASHBOARD = 'DASHBOARD'
 }
 
@@ -37,5 +39,6 @@ export enum DashboardTab {
   GENERATOR = 'GENERATOR',
   TUNER = 'TUNER',
   UPLOAD = 'UPLOAD',
-  SPOTIFY = 'SPOTIFY'
+  SPOTIFY = 'SPOTIFY',
+  GAME = 'GAME'
 }

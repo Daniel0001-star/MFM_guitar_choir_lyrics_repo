@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useMemo } from 'react';
+
+
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { DashboardTab, Song } from '../types';
 import { RepositoryList } from './RepositoryList';
 import { SongGenerator } from './SongGenerator';
 import { Tuner } from './Tuner';
 import { SpotifyPlayer } from './SpotifyPlayer';
 import { MusicPlayerBar } from './MusicPlayerBar';
+import { PitchGame } from './PitchGame';
 import { 
   Library, 
   UploadCloud, 
@@ -14,11 +17,13 @@ import {
   Mic2,
   Sun,
   Moon,
-  Headphones
+  Headphones,
+  Gamepad2
 } from 'lucide-react';
 
 interface DashboardProps {
   onLogout: () => void;
+  userName: string;
 }
 
 // Cosmology Effect Component with Motion
@@ -76,13 +81,14 @@ const StarField = () => {
   );
 };
 
-export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ onLogout, userName }) => {
   const [activeTab, setActiveTab] = useState<DashboardTab>(DashboardTab.REPOSITORY);
   const [isDarkMode, setIsDarkMode] = useState(true);
   
   // Global Player State
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const backgroundAudioRef = useRef<HTMLAudioElement>(null);
 
   const handlePlaySong = (song: Song) => {
     setCurrentSong(song);
@@ -106,7 +112,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
   useEffect(() => {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance("Welcome to Guitar Choir lyrics repository");
+      const utterance = new SpeechSynthesisUtterance(`Welcome, ${userName}, to the Guitar Choir lyrics repository`);
       utterance.rate = 0.9; 
       utterance.pitch = 1;
       utterance.volume = 1;
@@ -118,11 +124,42 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
         window.speechSynthesis.cancel();
       };
     }
+  }, [userName]);
+
+  // Background Music Effect
+  useEffect(() => {
+    const audio = backgroundAudioRef.current;
+    if (audio) {
+      audio.volume = 0.2; // Set a low volume for background music
+      audio.play().catch(error => {
+        console.log("Background audio autoplay was prevented. User interaction is required.", error);
+      });
+    }
   }, []);
+
+  // Pause background music when a song is played
+  useEffect(() => {
+    const audio = backgroundAudioRef.current;
+    if (audio) {
+      if (isPlaying && currentSong) {
+        audio.pause();
+      } else if (audio.paused) {
+        audio.play().catch(e => console.log("BG audio resume failed", e));
+      }
+    }
+  }, [isPlaying, currentSong]);
 
   return (
     <div className="flex h-screen w-full transition-colors duration-300 dark:bg-slate-950 bg-gray-50 dark:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] dark:from-indigo-950 dark:via-slate-950 dark:to-black text-slate-900 dark:text-white overflow-hidden relative">
       
+      {/* Background Music Player */}
+      <audio 
+        ref={backgroundAudioRef} 
+        src="https://cdn.pixabay.com/audio/2022/10/18/audio_731a559272.mp3"
+        loop 
+        preload="auto"
+      />
+
       {/* Background Stars - Only visible in dark mode primarily, or subtle in light */}
       {isDarkMode && <StarField />}
 
@@ -186,6 +223,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
             <Mic2 size={20} />
             <span className="hidden lg:block font-medium">Tuner</span>
           </button>
+          
+          <button
+            onClick={() => setActiveTab(DashboardTab.GAME)}
+            className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group ${
+              activeTab === DashboardTab.GAME
+                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/20' 
+                : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-purple-600 dark:hover:text-white'
+            }`}
+          >
+            <Gamepad2 size={20} />
+            <span className="hidden lg:block font-medium">Pitch Game</span>
+          </button>
 
           <button
             onClick={() => setActiveTab(DashboardTab.UPLOAD)}
@@ -230,11 +279,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
             
             {/* Header Area */}
             <div className="mb-8">
+              <h2 className="text-lg font-medium text-purple-300 mb-1">Welcome, {userName}!</h2>
               <h1 className="text-3xl font-bold mb-2 dark:text-white text-gray-900 relative">
                 {activeTab === DashboardTab.REPOSITORY && "Repository"}
                 {activeTab === DashboardTab.SPOTIFY && "Spotify Music Player"}
                 {activeTab === DashboardTab.GENERATOR && "Lyrics Generator"}
                 {activeTab === DashboardTab.TUNER && "Instrument Tuner"}
+                {activeTab === DashboardTab.GAME && "Pitch Perfect"}
                 {activeTab === DashboardTab.UPLOAD && "Upload Songs"}
               </h1>
               <div className={`h-1 w-20 rounded-full ${activeTab === DashboardTab.SPOTIFY ? 'bg-[#1DB954]' : 'bg-purple-600'}`} />
@@ -256,6 +307,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout }) => {
             {activeTab === DashboardTab.GENERATOR && <SongGenerator />}
             
             {activeTab === DashboardTab.TUNER && <Tuner />}
+            
+            {activeTab === DashboardTab.GAME && <PitchGame />}
             
             {activeTab === DashboardTab.UPLOAD && (
               <div className="dark:bg-white/5 bg-white/50 border dark:border-white/10 border-gray-300 border-dashed border-2 rounded-2xl p-12 flex flex-col items-center justify-center text-center animate-fade-in hover:border-purple-500/50 transition-colors cursor-pointer group shadow-xl dark:shadow-none backdrop-blur-sm">
