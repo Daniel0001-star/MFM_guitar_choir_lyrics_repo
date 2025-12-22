@@ -15,7 +15,7 @@ If asked about the repository content, assume you have access to a standard libr
  */
 export const createChatSession = (): Chat => {
   return ai.chats.create({
-    model: 'gemini-2.5-flash',
+    model: 'gemini-3-flash-preview',
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
       temperature: 0.7,
@@ -37,24 +37,23 @@ export const sendMessageToGemini = async (chat: Chat, message: string): Promise<
 };
 
 /**
- * Generates Lyrics for a song.
+ * Generates Lyrics for a song title using the Gemini API.
  */
 export const generateLyrics = async (songTitle: string): Promise<string> => {
   try {
-    const prompt = `Generate the full lyrics for the song "${songTitle}". 
-    If the song is a known Christian hymn or popular worship song (especially one performed by MFM Guitar Choir), provide the accurate original lyrics.
-    If the song is ambiguous or unknown, compose creative, biblically-inspired worship lyrics fitting for a guitar choir.
-    Format the output clearly with headers like "Verse 1", "Chorus", "Bridge". 
-    Do NOT include chord charts or sheet music, just the lyrics.`;
-    
+    const prompt = `Generate full, worship-style lyrics for a song titled "${songTitle}". 
+    The structure should include at least two verses, a chorus, and a bridge. 
+    The tone must be uplifting, spiritual, and suitable for a large choir ensemble. 
+    Format the output clearly with headings for [Verse 1], [Chorus], etc.`;
+
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
+        model: 'gemini-3-flash-preview',
+        contents: prompt
     });
-    
-    return response.text || "Could not generate lyrics.";
+
+    return response.text || `Could not compose lyrics for "${songTitle}". Please try another title.`;
   } catch (error) {
-    console.error("Generation Error:", error);
-    throw new Error("Failed to generate lyrics.");
+    console.error("Gemini Lyrics Generation Error:", error);
+    throw new Error("The Maestro is facing writer's block. Please try again later.");
   }
 };

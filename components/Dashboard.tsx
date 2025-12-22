@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { DashboardTab, Song } from '../types';
 import { RepositoryList } from './RepositoryList';
@@ -8,6 +6,7 @@ import { Tuner } from './Tuner';
 import { SpotifyPlayer } from './SpotifyPlayer';
 import { MusicPlayerBar } from './MusicPlayerBar';
 import { PitchGame } from './PitchGame';
+import { UploadForm } from './UploadForm'; // Import the new component
 import { 
   Library, 
   UploadCloud, 
@@ -286,7 +285,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout, userName }) => {
                 {activeTab === DashboardTab.GENERATOR && "Lyrics Generator"}
                 {activeTab === DashboardTab.TUNER && "Instrument Tuner"}
                 {activeTab === DashboardTab.GAME && "Pitch Perfect"}
-                {activeTab === DashboardTab.UPLOAD && "Upload Songs"}
+                {activeTab === DashboardTab.UPLOAD && "Upload New Song"}
               </h1>
               <div className={`h-1 w-20 rounded-full ${activeTab === DashboardTab.SPOTIFY ? 'bg-[#1DB954]' : 'bg-purple-600'}`} />
             </div>
@@ -311,19 +310,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onLogout, userName }) => {
             {activeTab === DashboardTab.GAME && <PitchGame />}
             
             {activeTab === DashboardTab.UPLOAD && (
-              <div className="dark:bg-white/5 bg-white/50 border dark:border-white/10 border-gray-300 border-dashed border-2 rounded-2xl p-12 flex flex-col items-center justify-center text-center animate-fade-in hover:border-purple-500/50 transition-colors cursor-pointer group shadow-xl dark:shadow-none backdrop-blur-sm">
-                <div className="w-20 h-20 rounded-full dark:bg-purple-500/10 bg-purple-100 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <UploadCloud className="w-10 h-10 text-purple-500" />
-                </div>
-                <h3 className="text-xl font-semibold dark:text-white text-gray-900 mb-2">Drop song files here</h3>
-                <p className="dark:text-purple-300/60 text-gray-500 max-w-sm">
-                  Support for PDF, MusicXML, and Audio files. 
-                  <br/> Drag and drop or click to browse.
-                </p>
-                <button className="mt-8 px-6 py-2 rounded-full bg-purple-600 hover:bg-purple-500 text-white font-medium transition-colors">
-                  Select Files
-                </button>
-              </div>
+              <UploadForm onUploadSuccess={() => setActiveTab(DashboardTab.REPOSITORY)} />
             )}
           </div>
         </div>
